@@ -76,7 +76,7 @@ public class NotificationSchedulerJobTask extends Job {
             int jobId =  new JobRequest.Builder(NotificationSchedulerJobTask.TAG)
                     .setPersisted(true)
                     .setRequiredNetworkType(JobRequest.NetworkType.CONNECTED)
-                    .setPeriodic(TimeUnit.MINUTES.toMillis(duration))
+                    .setPeriodic(TimeUnit.SECONDS.toMillis(duration))
                     .build()
                     .schedule();
         }
