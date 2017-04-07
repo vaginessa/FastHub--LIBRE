@@ -21,17 +21,13 @@ import com.fastaccess.helper.PrefGetter;
 import com.fastaccess.helper.RxHelper;
 import com.fastaccess.helper.ViewHelper;
 import com.fastaccess.provider.rest.RestProvider;
-import com.firebase.jobdispatcher.Constraint;
-import com.firebase.jobdispatcher.FirebaseJobDispatcher;
-import com.firebase.jobdispatcher.GooglePlayDriver;
-import com.firebase.jobdispatcher.Job;
-import com.firebase.jobdispatcher.JobParameters;
-import com.firebase.jobdispatcher.JobService;
-import com.firebase.jobdispatcher.Lifetime;
-import com.firebase.jobdispatcher.RetryStrategy;
-import com.firebase.jobdispatcher.Trigger;
+
+import com.evernote.android.job.JobManager;
+import com.evernote.android.job.JobRequest;
+import com.evernote.android.job.Job;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import rx.schedulers.Schedulers;
 
@@ -39,28 +35,25 @@ import rx.schedulers.Schedulers;
  * Created by Kosh on 19 Feb 2017, 6:32 PM
  */
 
-public class NotificationSchedulerJobTask extends JobService {
-    private final static String EVERY_30_MINS = "every_30_mins";
+public class NotificationSchedulerJobTask extends Job {
+    public final static String TAG = "every_30_mins";
+
     private final static int THIRTY_MINUTES = 30 * 60;//in seconds
     private static final String NOTIFICATION_GROUP_ID = "FastHub";
 
-    @Override public boolean onStartJob(JobParameters job) {
+    @Override @NonNull protected Result onRunJob(Params params) {
         if (Login.getUser() != null) {
             RestProvider.getNotificationService()
                     .getNotifications(0)
                     .subscribeOn(Schedulers.io())
                     .subscribe(item -> {
-                        AppHelper.cancelAllNotifications(getApplicationContext());
+                        AppHelper.cancelAllNotifications(getContext());
                         if (item != null) {
                             onSave(item.getItems());
                         }
                     }, Throwable::printStackTrace);
         }
-        return false;
-    }
-
-    @Override public boolean onStopJob(JobParameters job) {
-        return false;
+        return Result.SUCCESS;
     }
 
     public static void scheduleJob(@NonNull Context context) {
@@ -69,23 +62,24 @@ public class NotificationSchedulerJobTask extends JobService {
     }
 
     public static void scheduleJob(@NonNull Context context, int duration, boolean cancel) {
-        FirebaseJobDispatcher dispatcher = new FirebaseJobDispatcher(new GooglePlayDriver(context));
-        if (cancel) dispatcher.cancel(EVERY_30_MINS);
+        JobManager jobManager = JobManager.instance();
+        if (cancel) jobManager.cancelAllForTag(TAG);
         if (duration == -1) {
-            dispatcher.cancel(EVERY_30_MINS);
+            jobManager.cancelAllForTag(TAG);
             return;
         }
-        duration = duration <= 0 ? THIRTY_MINUTES : duration;
-        Job.Builder builder = dispatcher
-                .newJobBuilder()
-                .setTag(EVERY_30_MINS)
-                .setRetryStrategy(RetryStrategy.DEFAULT_LINEAR)
-                .setLifetime(Lifetime.FOREVER)
-                .setRecurring(true)
-                .setConstraints(Constraint.ON_ANY_NETWORK)
-                .setTrigger(Trigger.executionWindow(10, duration))
-                .setService(NotificationSchedulerJobTask.class);
-        dispatcher.mustSchedule(builder.build());
+
+        if(jobManager.getAllJobRequestsForTag(TAG).size() > 0) {
+            //JOB ALREADY IN SCHEDULE
+        } else {
+            duration = duration <= 0 ? THIRTY_MINUTES : duration;
+            int jobId =  new JobRequest.Builder(NotificationSchedulerJobTask.TAG)
+                    .setPersisted(true)
+                    .setRequiredNetworkType(JobRequest.NetworkType.CONNECTED)
+                    .setPeriodic(TimeUnit.MINUTES.toMillis(duration))
+                    .build()
+                    .schedule();
+        }
     }
 
     private void onSave(@Nullable List<Notification> notificationThreadModels) {
@@ -100,10 +94,10 @@ public class NotificationSchedulerJobTask extends JobService {
                 .filter(Notification::isUnread)
                 .count();
         if (count == 0) {
-            AppHelper.cancelAllNotifications(getApplicationContext());
+            AppHelper.cancelAllNotifications(getContext());
             return;
         }
-        Context context = getApplicationContext();
+        Context context = getContext();
         Bitmap largeIcon = BitmapFactory.decodeResource(context.getResources(),
                 R.mipmap.ic_launcher);
         int accentColor = ViewHelper.getAccentColor(context);
@@ -167,35 +161,35 @@ public class NotificationSchedulerJobTask extends JobService {
                 .setGroupSummary(true)
                 .setColor(accentColor)
                 .setContentIntent(getPendingIntent(notification.getId(), notification.getSubject().getUrl()))
-                .addAction(R.drawable.ic_github, getString(R.string.open),
+                .addAction(R.drawable.ic_github, getContext().getString(R.string.open),
                         getPendingIntent(notification.getId(), notification.getSubject().getUrl()))
-                .addAction(R.drawable.ic_eye_off, getString(R.string.mark_as_read), getReadOnlyPendingIntent(notification.getId(),
+                .addAction(R.drawable.ic_eye_off, getContext().getString(R.string.mark_as_read), getReadOnlyPendingIntent(notification.getId(),
                         notification.getSubject().getUrl()))
                 .setAutoCancel(true)
                 .build();
     }
 
     private NotificationCompat.Builder getNotification(@NonNull String title, @NonNull String message) {
-        return new NotificationCompat.Builder(this)
+        return new NotificationCompat.Builder(getContext())
                 .setSmallIcon(R.drawable.ic_notification)
                 .setContentTitle(title)
                 .setContentText(message);
     }
 
     private void showNotification(int id, android.app.Notification notification) {
-        NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        NotificationManager mNotificationManager = (NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE);
         mNotificationManager.notify(id, notification);
     }
 
     private PendingIntent getReadOnlyPendingIntent(long id, @NonNull String url) {
-        Intent intent = ReadNotificationService.start(this, id, url, true);
-        return PendingIntent.getService(this, (int) (id / 2), intent,
+        Intent intent = ReadNotificationService.start(getContext(), id, url, true);
+        return PendingIntent.getService(getContext(), (int) (id / 2), intent,
                 PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
     private PendingIntent getPendingIntent(long id, @NonNull String url) {
-        Intent intent = ReadNotificationService.start(this, id, url);
-        return PendingIntent.getService(this, (int) id, intent,
+        Intent intent = ReadNotificationService.start(getContext(), id, url);
+        return PendingIntent.getService(getContext(), (int) id, intent,
                 PendingIntent.FLAG_UPDATE_CURRENT);
     }
 }

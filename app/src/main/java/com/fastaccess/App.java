@@ -4,7 +4,9 @@ import android.support.annotation.NonNull;
 import android.support.multidex.MultiDexApplication;
 import android.support.v7.preference.PreferenceManager;
 
+import com.evernote.android.job.JobManager;
 import com.fastaccess.data.dao.model.Models;
+import com.fastaccess.provider.tasks.JobTaskCreator;
 import com.fastaccess.helper.TypeFaceHelper;
 import com.fastaccess.provider.tasks.notification.NotificationSchedulerJobTask;
 import com.fastaccess.provider.uil.UILProvider;
@@ -34,6 +36,8 @@ public class App extends MultiDexApplication {
         PreferenceManager.setDefaultValues(this, R.xml.fasthub_settings, false);
         UILProvider.initUIL(this);
         TypeFaceHelper.generateTypeface(this);
+
+        JobManager.create(this).addJobCreator(new JobTaskCreator());
         NotificationSchedulerJobTask.scheduleJob(this);//schedule the job for the notifications
     }
 
