@@ -70,17 +70,19 @@ public class NotificationSchedulerJobTask extends Job {
         }
 
         if(jobManager.getAllJobRequestsForTag(TAG).size() > 0) {
-            //JOB ALREADY IN SCHEDULE
-        } else {
-            duration = duration <= 0 ? THIRTY_MINUTES : duration;
-            int jobId =  new JobRequest.Builder(NotificationSchedulerJobTask.TAG)
-                    .setPersisted(true)
-                    .setRequiredNetworkType(JobRequest.NetworkType.CONNECTED)
-                    .setRequirementsEnforced(true)
-                    .setPeriodic(TimeUnit.SECONDS.toMillis(duration))
-                    .build()
-                    .schedule();
+            jobManager.cancelAllForTag(TAG);
         }
+        duration = duration <= 0 ? THIRTY_MINUTES : duration;
+        if (duration < 15*60) {
+            duration = 15 * 60;
+        }
+        int jobId =  new JobRequest.Builder(NotificationSchedulerJobTask.TAG)
+                .setPersisted(true)
+                .setRequiredNetworkType(JobRequest.NetworkType.CONNECTED)
+                .setRequirementsEnforced(true)
+                .setPeriodic(TimeUnit.SECONDS.toMillis(duration))
+                .build()
+                .schedule();
     }
 
     private void onSave(@Nullable List<Notification> notificationThreadModels) {
