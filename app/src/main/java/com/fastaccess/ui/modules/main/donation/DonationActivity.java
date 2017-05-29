@@ -64,22 +64,6 @@ public class DonationActivity extends BaseActivity {
         super.onStop();
     }
 
-    @OnClick(R.id.two) public void onTwoClicked() {
-        onProceed(getString(R.string.donation_product_1));
-    }
-
-    @OnClick(R.id.five) public void onFiveClicked() {
-        onProceed(getString(R.string.donation_product_2));
-    }
-
-    @OnClick(R.id.ten) public void onTenClicked() {
-        onProceed(getString(R.string.donation_product_3));
-    }
-
-    @OnClick(R.id.twenty) public void onTwentyClicked() {
-        onProceed(getString(R.string.donation_product_4));
-    }
-
     @NonNull @Override public TiPresenter providePresenter() {
         return new BasePresenter();
     }
