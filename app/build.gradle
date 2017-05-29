@@ -154,3 +154,10 @@ dependencies {
     androidTestCompile "com.android.support.test.espresso:espresso-intents:${espresseVersion}"
     androidTestCompile "com.android.support.test.espresso:espresso-core:${espresseVersion}"
 }
+
+android {
+    lintOptions {
+        disable 'MissingTranslation'
+        disable 'ExtraTranslation'
+    }
+}
