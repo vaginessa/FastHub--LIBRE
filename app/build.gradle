@@ -13,27 +13,16 @@ buildProperties {
 }
 
 android {
-    signingConfigs {
-        signing {
-            keyAlias((buildProperties.secrets['android_key_alias'] | buildProperties.notThere['android_key_alias']).string)
-            keyPassword((buildProperties.secrets['android_store_password'] | buildProperties.notThere['android_store_password']).string)
-            storeFile file('fastaccess-public')
-            storePassword((buildProperties.secrets['android_store_password'] | buildProperties.notThere['android_store_password']).string)
-        }
-    }
     compileSdkVersion 25
     buildToolsVersion "25.0.3"
     defaultConfig {
         applicationId "com.fastaccess.github"
         minSdkVersion 21
         targetSdkVersion 25
+        versionCode 253
+        versionName "2.5.3"
         versionCode 300
         versionName "3.0.0"
-        signingConfig signingConfigs.signing
-        buildConfigString "GITHUB_CLIENT_ID", (buildProperties.secrets['github_client_id'] | buildProperties.notThere['github_client_id']).string
-        buildConfigString "GITHUB_SECRET", (buildProperties.secrets['github_secret'] | buildProperties.notThere['github_secret']).string
-        buildConfigString "IMGUR_CLIENT_ID", (buildProperties.secrets['imgur_client_id'] | buildProperties.notThere['imgur_client_id']).string
-        buildConfigString "IMGUR_SECRET", (buildProperties.secrets['imgur_secret'] | buildProperties.notThere['imgur_secret']).string
         buildConfigField "String", "REST_URL", '"https://api.github.com/"'
         buildConfigField "String", "IMGUR_URL", '"https://api.imgur.com/3/"'
         multiDexEnabled true
