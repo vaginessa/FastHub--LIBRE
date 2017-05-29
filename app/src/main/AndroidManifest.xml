@@ -217,7 +217,8 @@
 
         <service
             android:name=".provider.tasks.notification.NotificationSchedulerJobTask"
-            android:exported="false">
+            android:exported="true"
+            android:permission="android.permission.BIND_JOB_SERVICE">
         </service>
         <service android:name=".provider.tasks.notification.ReadNotificationService"/>
         <service android:name=".provider.tasks.git.GithubActionService"/>
