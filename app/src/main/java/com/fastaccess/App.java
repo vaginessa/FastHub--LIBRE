@@ -10,8 +10,6 @@ import com.fastaccess.provider.colors.ColorsProvider;
 import com.fastaccess.provider.emoji.EmojiManager;
 import com.fastaccess.provider.tasks.notification.NotificationSchedulerJobTask;
 import com.fastaccess.provider.uil.UILProvider;
-import com.google.android.gms.auth.api.Auth;
-import com.google.android.gms.common.api.GoogleApiClient;
 
 import io.requery.Persistable;
 import io.requery.android.sqlite.DatabaseSource;
@@ -32,7 +30,6 @@ import shortbread.Shortbread;
 public class App extends Application {
     private static App instance;
     private ReactiveEntityStore<Persistable> dataStore;
-    private static GoogleApiClient googleApiClient;
 
     @Override public void onCreate() {
         super.onCreate();
@@ -74,10 +71,6 @@ public class App extends Application {
         Shortbread.create(this);
         EmojiManager.load();
         ColorsProvider.load();
-        googleApiClient = new GoogleApiClient.Builder(this)
-                .addApi(Auth.CREDENTIALS_API)
-                .build();
-        googleApiClient.connect();
     }
 
     private void setupPreference() {
@@ -100,9 +93,5 @@ public class App extends Application {
             dataStore = ReactiveSupport.toReactiveStore(new EntityDataStore<Persistable>(configuration));
         }
         return dataStore;
-    }
-
-    public GoogleApiClient getGoogleApiClient() {
-        return googleApiClient;
     }
 }
