@@ -19,8 +19,6 @@ android {
         applicationId "com.fastaccess.github"
         minSdkVersion 21
         targetSdkVersion 25
-        versionCode 253
-        versionName "2.5.3"
         versionCode 300
         versionName "3.0.0"
         buildConfigField "String", "REST_URL", '"https://api.github.com/"'
