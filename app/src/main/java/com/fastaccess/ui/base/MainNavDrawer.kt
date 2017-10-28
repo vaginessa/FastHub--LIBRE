@@ -184,7 +184,6 @@ class MainNavDrawer(val view: BaseActivity<*, *>, private val extraNav: Navigati
                     item.itemId == R.id.trending -> view.startActivity(Intent(view, TrendingActivity::class.java))
                     item.itemId == R.id.reportBug -> view.startActivity(CreateIssueActivity.startForResult(view))
                     item.itemId == R.id.faq -> view.startActivity(Intent(view, PlayStoreWarningActivity::class.java))
-                    item.itemId == R.id.restorePurchase -> view.startActivity(Intent(view, CheckPurchaseActivity::class.java))
                 }
             }
         }, 250)
